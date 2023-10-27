@@ -1,10 +1,7 @@
 import telebot
 import config
 import client
-
-# import pydantic_models
-# import client
-# import json
+import src.tasks.router as router
 
 
 bot = telebot.TeleBot(config.bot_token)
@@ -12,7 +9,7 @@ bot = telebot.TeleBot(config.bot_token)
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
-    print(message)
+    # print(message)
     first_name = str(message.from_user.last_name)
     last_name = str(message.from_user.first_name)
     text = (f'👋Привет, {first_name} {last_name}.Я бот для проведения опросов!;'
@@ -23,8 +20,9 @@ def start_message(message):
 
     # создаем каждую кнопку таким образом
     btn1 = telebot.types.KeyboardButton('📝Пройти опрос')
+    btn2 = telebot.types.KeyboardButton('Отправить отчет')
 
-    markup.add(btn1)
+    markup.add(btn1, btn2)
 
     # теперь добавляем объект с кнопками к отправляемому пользователю сообщению в аргумент "reply_markup"
     bot.send_message(message.chat.id, text, reply_markup=markup)
@@ -45,6 +43,14 @@ def choose_research(message):
     inline_markup.add(btn1, btn2, btn3)
 
     bot.send_message(message.chat.id, text, reply_markup=inline_markup)
+
+
+@bot.message_handler(regexp='Отправить отчет')
+def choose_research(message):
+    text = 'Отчет отправлен'
+    email = router.get_dashboard_report()
+
+    bot.send_message(message.chat.id, text, email)
 
 # @bot.message_handler(func=lambda message: message.from_user.id == config.tg_admin_id and message.text == "Все юзеры")
 # def all_users(message):
@@ -236,5 +242,6 @@ def callback_query(call):
                          text=text_message, reply_markup=inline_markup)
 # хендлер принимает объект Call
 
+
     # запускаем бота этой командой:
-bot.infinity_polling(none_stop=True)
+launch = bot.infinity_polling(none_stop=True)
